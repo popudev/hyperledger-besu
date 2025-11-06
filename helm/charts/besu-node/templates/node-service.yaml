@@ -68,8 +68,8 @@ metadata:
   labels:
     release: monitoring
     helm.sh/chart: {{ include "besu-node.chart" . }}
-    app: {{ template "besu-node.fullname" . }}
-    chart: {{ template "besu-node.chart" . }}
+    app: {{ include "besu-node.fullname" . }}
+    chart: {{ include "besu-node.chart" . }}
     heritage: {{ .Release.Service }}
     namespace: {{ .Release.Namespace }}
     app.kubernetes.io/name: {{ include "besu-node.fullname" . }}

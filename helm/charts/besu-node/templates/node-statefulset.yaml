@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ template "besu-node.fullname" . }}
+  name: {{ include "besu-node.fullname" . }}
   labels:
     app.kubernetes.io/name: besu-statefulset
     app.kubernetes.io/component: besu

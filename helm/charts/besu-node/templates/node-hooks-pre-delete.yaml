@@ -27,7 +27,7 @@ spec:
       serviceAccountName: {{ include "besu-node.fullname" . }}-hooks-sa
       restartPolicy: "OnFailure"
       containers:
-        - name: {{ template "besu-node.fullname" . }}-node-pre-delete-hook
+        - name: {{ include "besu-node.fullname" . }}-node-pre-delete-hook
           image: "{{ .Values.image.hooks.repository }}:{{ .Values.image.hooks.tag }}"
           imagePullPolicy: {{ .Values.image.hooks.pullPolicy }}
           command:
@@ -35,8 +35,7 @@ spec:
             - -c
           args:
             - |
-
-              echo "{{ template "besu-node.fullname" . }} Pre Delete hook ..."
+              echo "{{ include "besu-node.fullname" . }} Pre Delete hook ..."
 
               function deleteSecret {
                 key=$1
@@ -50,9 +49,9 @@ spec:
                   echo "No tessera-peers found, nothing to do..."
                 # delete the one
                 else
-                  echo "tessera-peers found, deleting {{ template "besu-node.fullname" . }}..."
+                  echo "tessera-peers found, deleting {{ include "besu-node.fullname" . }}..."
                   echo $(kubectl -n {{ .Release.Namespace }} get configmap tessera-peers -o jsonpath='{.data.tesseraPeers}' ) > /tmp/tessera-peers.raw
-                  cat /tmp/tessera-peers.raw | jq --arg NEEDLE "{{ template "besu-node.fullname" . }}" 'del(.[] | select( .url | contains($NEEDLE) ))' > /tmp/tessera-peers
+                  cat /tmp/tessera-peers.raw | jq --arg NEEDLE "{{ include "besu-node.fullname" . }}" 'del(.[] | select( .url | contains($NEEDLE) ))' > /tmp/tessera-peers
                   kubectl -n {{ .Release.Namespace }} create configmap tessera-peers --from-file=tesseraPeers=/tmp/tessera-peers -o yaml --dry-run=client | kubectl replace -f -
                 fi
               }
@@ -64,13 +63,13 @@ spec:
                   echo "No peers found, nothing to do..."
                 # delete the one
                 else
-                  echo "besu-peers found, deleting {{ template "besu-node.fullname" . }}..."
+                  echo "besu-peers found, deleting {{ include "besu-node.fullname" . }}..."
                   echo $(kubectl -n {{ .Release.Namespace }} get configmap besu-peers -o jsonpath='{.data.static-nodes\.json}' ) > /tmp/static-nodes.json.raw
-                  cat /tmp/static-nodes.json.raw | jq --arg NEEDLE "{{ template "besu-node.fullname" . }}" 'del(.[] | select( . | contains($NEEDLE) ))' > /tmp/static-nodes.json
+                  cat /tmp/static-nodes.json.raw | jq --arg NEEDLE "{{ include "besu-node.fullname" . }}" 'del(.[] | select( . | contains($NEEDLE) ))' > /tmp/static-nodes.json
                   kubectl -n {{ .Release.Namespace }} create configmap besu-peers --from-file=static-nodes.json=/tmp/static-nodes.json -o yaml --dry-run=client | kubectl replace -f -
 
                   echo "Deleting node address configmap... "
-                  kubectl delete configmap {{ template "besu-node.fullname" . }}-address --namespace {{ .Release.Namespace }}
+                  kubectl delete configmap {{ include "besu-node.fullname" . }}-address --namespace {{ .Release.Namespace }}
                 fi
               }
 
@@ -82,9 +81,9 @@ spec:
                   echo "No bootnodes found, nothing to do..."
                 # delete the one
                 else
-                  echo "besu-bootnodes found, deleting {{ template "besu-node.fullname" . }}..."
+                  echo "besu-bootnodes found, deleting {{ include "besu-node.fullname" . }}..."
                   echo $(kubectl -n {{ .Release.Namespace }} get configmap besu-bootnodes -o jsonpath='{.data.bootnodes-json}' ) > /tmp/besu-bootnodes-json.raw
-                  cat /tmp/besu-bootnodes-json.raw | jq --arg NEEDLE "{{ template "besu-node.fullname" . }}" 'del(.[] | select( . | contains($NEEDLE) ))' > /tmp/besu-bootnodes-json
+                  cat /tmp/besu-bootnodes-json.raw | jq --arg NEEDLE "{{ include "besu-node.fullname" . }}" 'del(.[] | select( . | contains($NEEDLE) ))' > /tmp/besu-bootnodes-json
                   cat /tmp/besu-bootnodes-json | jq -r -c '. | join(",")' | tr -d '\n' > /tmp/besu-bootnodes-string
                   kubectl -n {{ .Release.Namespace }} create configmap besu-bootnodes --from-file=bootnodes-json=/tmp/besu-bootnodes-json --from-file=bootnodes-string=/tmp/besu-bootnodes-string -o yaml --dry-run=client | kubectl replace -f -
                 fi
@@ -95,10 +94,10 @@ spec:
               delete_node_from_tessera_peers_configmap
 
 {{- if .Values.quorumFlags.removeKeysOnDelete }}
-              deleteSecret {{ template "besu-node.fullname" . }}-keys
-              deleteSecret {{ template "besu-node.fullname" . }}-account
+              deleteSecret {{ include "besu-node.fullname" . }}-keys
+              deleteSecret {{ include "besu-node.fullname" . }}-account
 {{- if .Values.quorumFlags.privacy }}
-              deleteSecret {{ template "besu-node.fullname" . }}-tessera-keys
+              deleteSecret {{ include "besu-node.fullname" . }}-tessera-keys
 {{- end }}
 {{- end }}
 

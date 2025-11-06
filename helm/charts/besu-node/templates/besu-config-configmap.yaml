@@ -24,7 +24,7 @@ data:
     data-path={{ .Values.node.besu.dataPath | quote }}
     genesis-file={{ .Values.node.besu.genesisFilePath | quote }}
     logging={{ .Values.node.besu.logging | quote }}
-    node-private-key-file={{.Values.node.besu.privateKeyPath | quote }}
+    node-private-key-file={{ .Values.node.besu.privateKeyPath | quote }}
 
     {{ if  .Values.node.besu.p2p.enabled -}}
     # P2P network

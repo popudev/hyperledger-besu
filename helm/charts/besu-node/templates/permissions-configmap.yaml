@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "besu-node.fullname" . }}-permissions
+  name: {{ include "besu-node.fullname" . }}-permissions
   labels:
     app.kubernetes.io/name: besu-permissions
     app.kubernetes.io/component: besu
