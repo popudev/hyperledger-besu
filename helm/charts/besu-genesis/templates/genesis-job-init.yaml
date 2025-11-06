@@ -1,0 +1,103 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "besu-genesis.name" . }}-init
+  labels:
+    app.kubernetes.io/name: besu-genesis-job
+    app.kubernetes.io/component: genesis-job
+    app.kubernetes.io/part-of: {{ include "besu-genesis.fullname" . }}
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    helm.sh/hook-delete-policy: "hook-succeeded"
+spec:
+  # backoffLimit: 3
+  completions: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: besu-genesis-job
+        app.kubernetes.io/component: genesis-job
+        app.kubernetes.io/part-of: {{ include "besu-genesis.fullname" . }}
+        app.kubernetes.io/namespace: {{ .Release.Namespace }}
+        app.kubernetes.io/managed-by: helm
+    spec:
+      serviceAccountName: {{ include "besu-genesis.name" . }}-sa
+      restartPolicy: "Never"
+      containers:
+        - name: generate-genesis
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          securityContext:
+            runAsUser: 0
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: generated-config
+              mountPath: /generated-config
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - |
+              function safeWriteSecret {
+                key=$1
+                fpath=$2
+                kubectl create secret generic ${key}-keys --namespace {{ .Release.Namespace }} --from-file=nodekey=${fpath}/nodekey --from-file=nodekey.pub=${fpath}/nodekey.pub --from-file=enode=${fpath}/nodekey.pub --from-file=address=${fpath}/address --from-file=accountPrivate.key=${fpath}/accountPrivateKey --from-file=accountPassword=${fpath}/accountPassword --from-file=accountKeystore=${fpath}/accountKeystore --from-file=accountAdddress=${fpath}/accountAddress
+              }
+
+              function safeWriteBesuPeersConfigmap {
+                FOLDER_PATH=$1
+                kubectl get configmap --namespace {{ .Release.Namespace }} besu-peers
+                if [ $? -ne 0 ]; then
+                  kubectl create configmap --namespace {{ .Release.Namespace }} besu-peers --from-file=static-nodes.json=$FOLDER_PATH/static-nodes.json
+                fi
+              }
+
+              function safeWriteGenesisConfigmap {
+                FOLDER_PATH=$1
+                kubectl get configmap --namespace {{ .Release.Namespace }} besu-genesis
+                if [ $? -ne 0 ]; then
+                  kubectl create configmap --namespace {{ .Release.Namespace }} besu-genesis --from-file=genesis.json=$FOLDER_PATH/besu/genesis.json
+                fi
+              }
+
+              echo "Creating config ..."
+              FOLDER_PATH=$(quorum-genesis-tool --consensus {{ .Values.rawGenesisConfig.genesis.config.algorithm.consensus }} {{ if .Values.rawGenesisConfig.blockchain.nodes.generate }} --validators {{ .Values.rawGenesisConfig.blockchain.nodes.count }} {{ else }} --validators 0 {{ end }} --members 0 --bootnodes 0 --chainID {{ .Values.rawGenesisConfig.genesis.config.chainId }} --blockperiod {{ .Values.rawGenesisConfig.genesis.config.algorithm.blockperiodseconds }} --epochLength {{ .Values.rawGenesisConfig.genesis.config.algorithm.epochlength }} --requestTimeout {{ .Values.rawGenesisConfig.genesis.config.algorithm.requesttimeoutseconds }} --difficulty {{ .Values.rawGenesisConfig.genesis.difficulty }} --gasLimit {{ .Values.rawGenesisConfig.genesis.gasLimit }} --coinbase {{ .Values.rawGenesisConfig.genesis.coinbase }} {{ if .Values.rawGenesisConfig.blockchain.accountPassword }} --accountPassword {{ .Values.rawGenesisConfig.blockchain.accountPassword }} {{ end }} --maxCodeSize {{ .Values.rawGenesisConfig.genesis.maxCodeSize }} --txnSizeLimit {{ .Values.rawGenesisConfig.genesis.txnSizeLimit }} --quickstartDevAccounts {{ .Values.rawGenesisConfig.genesis.includeQuickStartAccounts }} --alloc {{ if .Values.rawGenesisConfig.genesis.alloc }} '{{ .Values.rawGenesisConfig.genesis.alloc | toJson }}' {{ else }} '{}' {{ end }} --outputPath /generated-config | tail -1 | sed -e "s/^Artifacts in folder: //")
+
+              echo "Creating bootnodes configmap in k8s ..."
+              echo "[]" > /tmp/besu-bootnodes
+              kubectl create configmap --namespace {{ .Release.Namespace }} besu-bootnodes --from-file=bootnodes=/tmp/besu-bootnodes
+
+              echo $FOLDER_PATH
+              echo "Creating genesis configmap in k8s ..."
+              safeWriteGenesisConfigmap $FOLDER_PATH
+
+              # create the static-nodes with proper dns names for the quorum nodes
+              echo "[" > $FOLDER_PATH/static-nodes.json
+              echo "Creating validator secrets in k8s ..."
+              i=1
+              for f in $(find $FOLDER_PATH -type d -iname "validator*" -exec basename {} \;); do
+                if [ -d $FOLDER_PATH/${f} ]; then
+                  echo $f
+                  safeWriteSecret besu-node-validator-${i} "$FOLDER_PATH/${f}"
+                  kubectl create configmap --namespace {{ .Release.Namespace }} besu-node-validator-${i}-address --from-file=address=$FOLDER_PATH/${f}/address
+                  # add to the static-nodes
+                  pubkey=$(cat $FOLDER_PATH/${f}/nodekey.pub )
+                  echo ",\"enode://$pubkey@besu-node-validator-$i-0.besu-node-validator-$i.{{ .Release.Namespace }}.svc.cluster.local:30303?discport=0\"" >> $FOLDER_PATH/static-nodes.json
+
+                  i=$((i+1))
+                fi
+              done
+
+              echo "]" >> $FOLDER_PATH/static-nodes.json
+              # remove the extra comma to make it valid json
+              sed -i '0,/,/s///' $FOLDER_PATH/static-nodes.json
+              safeWriteBesuPeersConfigmap $FOLDER_PATH
+
+              echo "Completed ..."
+
+      volumes:
+        - name: generated-config
+          emptyDir: {}
