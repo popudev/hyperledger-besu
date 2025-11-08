@@ -25,8 +25,4 @@ options:
       - arg: "--disable=traefik --tls-san=vps.blockchain.local"
         nodeFilters:
           - server:0
-  kubeconfig:
-    updateDefaultKubeconfig: true  # Tự động merge kubeconfig vào ~/.kube/config
-    switchCurrentContext: true
-  runtime:
-    gpuRequest: false
+
