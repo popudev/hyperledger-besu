@@ -1,0 +1,32 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: my-cluster     # Tên cụm (cluster name)
+
+servers: 1             # Số lượng server node (control plane)
+agents: 2              # Số lượng agent node (worker)
+
+# Cấu hình cổng cho các service (ví dụ để expose port 80 và 443 ra ngoài)
+ports:
+  - port: 80:80        # host:container
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443
+    nodeFilters:
+      - loadbalancer
+
+# Thiết lập network (tùy chọn)
+network: k3d-net
+
+# Tự động tạo load balancer
+options:
+  k3s:
+    extraArgs:
+      - arg: "--disable=traefik --tls-san=vps.blockchain.local"
+        nodeFilters:
+          - server:0
+  kubeconfig:
+    updateDefaultKubeconfig: true  # Tự động merge kubeconfig vào ~/.kube/config
+    switchCurrentContext: true
+  runtime:
+    gpuRequest: false
