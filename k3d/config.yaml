@@ -10,8 +10,8 @@ agents: 2              # Số lượng agent node (worker)
 # ⚙️ Định nghĩa API server (kube-apiserver endpoint)
 kubeAPI:
   host: "vps.blockchain.local"   # domain sẽ xuất hiện trong kubeconfig
-  hostIP: "127.0.0.1"            # IP máy thật hoặc VPS (có thể đổi)
-  hostPort: "6445"               # port cho Kubernetes API
+  hostIP: "0.0.0.0"            # IP máy thật hoặc VPS (có thể đổi)
+  hostPort: "6443"               # port cho Kubernetes API
 
 
 # 🧩 Host aliases nội bộ cho cluster
