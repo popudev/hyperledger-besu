@@ -6,6 +6,20 @@ metadata:
 servers: 1             # Số lượng server node (control plane)
 agents: 2              # Số lượng agent node (worker)
 
+
+# ⚙️ Định nghĩa API server (kube-apiserver endpoint)
+kubeAPI:
+  host: "vps.blockchain.local"   # domain sẽ xuất hiện trong kubeconfig
+  hostIP: "127.0.0.1"            # IP máy thật hoặc VPS (có thể đổi)
+  hostPort: "6445"               # port cho Kubernetes API
+
+
+# 🧩 Host aliases nội bộ cho cluster
+hostAliases:
+  - ip: 127.0.0.1
+    hostnames:
+      - vps.blockchain.local
+
 # Cấu hình cổng cho các service (ví dụ để expose port 80 và 443 ra ngoài)
 ports:
   - port: 80:80        # host:container
@@ -22,7 +36,7 @@ network: k3d-net
 options:
   k3s:
     extraArgs:
-      - arg: "--disable=traefik --tls-san=vps.blockchain.local"
+      - arg: "--disable=traefik"
         nodeFilters:
           - server:0
 
