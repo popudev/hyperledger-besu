@@ -1,0 +1,104 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-nginx
+  namespace: default
+  labels:
+    app: test-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-nginx
+  template:
+    metadata:
+      labels:
+        app: test-nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+  namespace: default
+  labels:
+    app: test-nginx
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: test-nginx
+
+---
+# Secret chứa TLS certificate và private key
+# Cách tạo Secret từ file:
+# kubectl create secret tls test-tls-secret \
+#   --cert=path/to/certificate.crt \
+#   --key=path/to/private.key \
+#   --namespace=default
+#
+# Hoặc tạo từ command line (self-signed cho test):
+# openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+#   -keyout tls.key -out tls.crt \
+#   -subj "/CN=test.blockchain.local"
+# kubectl create secret tls test-tls-secret --cert=tls.crt --key=tls.key
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-tls-secret
+  namespace: default
+type: kubernetes.io/tls
+data:
+  # Base64 encoded certificate và key từ cert/tls.crt và cert/tls.key
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVXVENDQTBHZ0F3SUJBZ0lVWGxkRnpoOGFqZ21zR3ErdnZ6V3NOUkUrakY0d0RRWUpLb1pJaHZjTkFRRUwKQlFBd2dZNHhDekFKQmdOVkJBWVRBbFpPTVJRd0VnWURWUVFJREF0SWJ5QkRhR2tnVFdsdWFERVpNQmNHQTFVRQpCd3dRU0c4Z1EyaHBJRTFwYm1nZ1EybDBlVEVaTUJjR0ExVUVDZ3dRUW14dlkydGphR0ZwYmlCTWIyTmhiREVXCk1CUUdBMVVFQ3d3TlNWUWdSR1Z3WVhKMGJXVnVkREViTUJrR0ExVUVBd3dTS2k1aWJHOWphMk5vWVdsdUxteHYKWTJGc01CNFhEVEkxTVRFd09ERXhOVEEwTVZvWERUSTJNVEV3T0RFeE5UQTBNVm93Z1k0eEN6QUpCZ05WQkFZVApBbFpPTVJRd0VnWURWUVFJREF0SWJ5QkRhR2tnVFdsdWFERVpNQmNHQTFVRUJ3d1FTRzhnUTJocElFMXBibWdnClEybDBlVEVaTUJjR0ExVUVDZ3dRUW14dlkydGphR0ZwYmlCTWIyTmhiREVXTUJRR0ExVUVDd3dOU1ZRZ1JHVncKWVhKMGJXVnVkREViTUJrR0ExVUVBd3dTS2k1aWJHOWphMk5vWVdsdUxteHZZMkZzTUlJQklqQU5CZ2txaGtpRwo5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBNDQ1bUdqNVRrV3dVeEE2eXBTcVBKNGlNZzdXTnpNc1c2Z0VjCmh5QlF1SW1XclE1Nm9ZUEsvejA0ZnZiNzVYTDArcHRRbkFJcENSeSs0K2lVZ0EvcW9GeG5WOEptR2NOWkV6b2YKN1ZqWExkbXpKN1dHSDJnV2NSM2lMUWtiTW9uL0dkS004cTZPbG16M0xWUUNPSWhOTWgvQXlPWlFOZDZ1ZFIrRwpUcDduZ3k3VkRRR1pRWnlCQngySHJiTTBpaVlwRU95eC9maXRKdHo2QUl4MG1rL3krNDVmUGNHdmhSNkxEQzFtCnVOTS9uRHZPNkE0SWRCaDMzajlIZlZNVkwyWmc1SCtHM003QVpIOWRzNkw4Z3FHeUJvelJwODhERVpNcGhxUkIKNmhabFNPY3NQYllVekM3VnYweGZsQUtZNmpBRHQ2eTVHUitFUnlLRHhHOXFnVUNmR1FJREFRQUJvNEdzTUlHcApNQWtHQTFVZEV3UUNNQUF3Q3dZRFZSMFBCQVFEQWdYZ01IQUdBMVVkRVFScE1HZUNFaW91WW14dlkydGphR0ZwCmJpNXNiMk5oYklJUVlteHZZMnRqYUdGcGJpNXNiMk5oYklJU0tpNWliRzlqYTJOb1lXbHVMbXh2WTJGc2doVjAKWlhOMExtSnNiMk5yWTJoaGFXNHViRzlqWVd5Q0ZIWndjeTVpYkc5amEyTm9ZV2x1TG14dlkyRnNNQjBHQTFVZApEZ1FXQkJRWHVSUWdXK3NIOXViUmhocVNFRXdwbk9LZndEQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFYTTMxClJkTU9zQTB2QzlKVUJyUnhXeFJFbk1RMEZWM1JzdEM1dU85V2VPbXR4Q3J1STFuWUdLd3pZUlJUSWM2R1RzRnEKSEI3cU5QeWJ0NWE4MjhWMUY2VlJNRkI3S0lidzcvMytYODc4ZmRKR3N1U3M4Si9lZDNGNVZnMVl5L3pOWjRKYQpqN0htQ3J3OFptY0NxZ3hkU3k2VCswTzJyMS9yV3NKdmlQb2pyL2VsSlN0UDhOc25BdjdhNTIrN3ZlTndHNjJQClZCelovbU9DK2VjQllaQ2NrOXhRUnlhMDFPS3dJVjBOS2tmSWIydW0zU1J2T0dML0dBU1lLQ3hIQ004bWlQTWcKR3g2aDN1ZGZVTE9zUkk0Q1VBTXJjOFd6dVNRT044TXpPL29xcExMdjF3Vkp3UklaSVM3c0lkQllIWmZNY2xhUApVM1N3TGU4T1VBWU11bWgxWkE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRGpqbVlhUGxPUmJCVEUKRHJLbEtvOG5pSXlEdFkzTXl4YnFBUnlISUZDNGlaYXREbnFoZzhyL1BUaCs5dnZsY3ZUNm0xQ2NBaWtKSEw3ago2SlNBRCtxZ1hHZFh3bVladzFrVE9oL3RXTmN0MmJNbnRZWWZhQlp4SGVJdENSc3lpZjhaMG96eXJvNldiUGN0ClZBSTRpRTB5SDhESTVsQTEzcTUxSDRaT251ZURMdFVOQVpsQm5JRUhIWWV0c3pTS0ppa1E3TEg5K0swbTNQb0EKakhTYVQvTDdqbDg5d2ErRkhvc01MV2E0MHorY084N29EZ2gwR0hmZVAwZDlVeFV2Wm1Ea2Y0YmN6c0JrZjEyegpvdnlDb2JJR2pOR256d01Sa3ltR3BFSHFGbVZJNXl3OXRoVE1MdFcvVEYrVUFwanFNQU8zckxrWkg0UkhJb1BFCmIycUJRSjhaQWdNQkFBRUNnZ0VBRWc5alRsNG51UVVTVlZpaXlFM0xTSXlUZFdFWGlOdE4vV0s2OGtVSDd3dDUKZGxEdHZldWxOUEoxalVzYUpTVGxhVTNpSFEybFZ0d3RrTTVNMmVpWmV5SjJUNzVscHRJTW0rUnJOQVhPNXl4Tgo1aDhIcnU2dWlFb0NRVWVGblhKYkdTQXZNRlFYRER5SDloU2lxL3l5WHNIckphNjB5eis2Q2lEblFvNWxTckdLCnBkZTRjNHE2L1lnMUtZOFdMTDl2WGxIamI5ZUlMUVdUejlxQnQwai9WSlo5MXZGbDM5ejIvdWdiZFgyb05ZWk0KRnNPSGRoV2dKY1FFMGNYcXRlT2ZWTGFKWHZkYTI1M1RpK0tTM3A3S0l5dUZqNm5saFFsYXN3eFROS2ZyOEpSSwp6Ky9PWjN6WTN3RUFTaW5ESmpwSzFvVWxjYnovaWgyK3k5aFFBcmlQWVFLQmdRRDBiYkZ2bEZjanhkNTIyK0dxCjF6aTczZm5xNEJkQzVpTWpNQW5rS01mYlZtQys3Nm4vb2FWNjkxbll5MUJVZkYreW5wTTJkUHkydFVMSkVoTlIKZ2RqSW9vMnZjRVQyWmd2dHNyVlE2TnZHZUxwemxEc1BiQ1I5L2I5NW9TT2ovanVIaTB4WlN0RGFlS3h3V1NmRwpDV2l6UXMrUVMxZnZtQ3YvS0xCcGNCYTFPUUtCZ1FEdVZEbkNxZGozZS9jM2Q0OHhjb1ZHckcrV2FScnhqbExmCkY3Wmhoa3dTWCs1ejN1d3JTZ3Rod0pLa2pwVkY0cWFzUWgycnQ4ekhoVXhldTZKNHJHa3VaZmRmMWtWKzZlWk0KTG1BRmVaMGhheTFLeEpFckJwQkh3MG9TZ3kzTW9WTkw4aS92RzZWd3ZEZnBIbXFxYStuMFJsUk1nc1pMS2pvawpMN1V4UEw0WTRRS0JnUUR5YjlhZFVHbjU3bW1RUk5tWkpPMTkwVmJ3TXlKL1ZWcW1yU0F5Y0l5Q3JqTTVUdWV6CnlMWWt1REFpaXM1N2JmMVJZbDJybHUrTm5VM0h0Nmozb0MzUUd3TWpidHpIOUVHQ20wMmlHY1RiSDZYM3U1KzAKMVZPQXIrMTZDMjBaWExIWTZENXJGbnovSk5BTWd6R2pDSFFUMFlHa29rWnZPK1R2cVlFSW80ZXlhUUtCZ0VlNQpTMFM5THRHVUdoczBQUURKa1RocXJvNWFoVVJLNjcrOStDSXpjM05ZTVgvbmg3V2phL2Q0Sitta0MySmp5bnN1CnpwVWVGRis3U3ZkN2luSzhtRTdoV3VnWnFRSi95OUlEWnR4ZTlCM1pqbURnOVRzNGwzVXhYWHBpeGdhK1NqNGgKM2JFYzVkWWVuc2ptWVgxMlNvczhHeVNIZXJ1bU1xY3ZRRjFZQlhHaEFvR0FmU1l1SmMxTTJxYkx3Zm14SVhlSQpaU0FXRmo3eEVlWnVSL0U2K0F4bFpWUFF5VFRldlVIMmlMcGdXdGRoNmRNUCtyRkdpemFDTjBwNVAwTDk2UEc5Cm5aU1FyVnEvS1FHdjlLRS8xeVFXVmJUZUJYRGdiQ0ZwUnN2Z2l0dEtjdk4wTzdreEdlMHpqTHVSWFdFSnNPdlMKMkYzMEZhak9UVmhHSCtieGlLZzIyTm89Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: default
+  annotations:
+    # Annotation cho nginx ingress controller
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Redirect HTTP sang HTTPS
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Có thể thêm các annotation khác nếu cần
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  # Cấu hình TLS
+  tls:
+    - hosts:
+        - test.blockchain.local
+      secretName: test-tls-secret  # Tên Secret chứa certificate
+  
+  rules:
+    - host: test.blockchain.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: test-service
+                port:
+                  number: 80

@@ -1,0 +1,69 @@
+# Frontend configuration
+frontend:
+  image:
+    repository: ghcr.io/blockscout/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  resources:
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+  env:
+    NEXT_PUBLIC_API_HOST: "explorer.blockchain.local"
+    NEXT_PUBLIC_API_PROTOCOL: "http"
+    NEXT_PUBLIC_API_BASE_PATH: "/"
+
+    NEXT_PUBLIC_STATS_API_HOST: "http://explorer.blockchain.local"
+    NEXT_PUBLIC_STATS_API_BASE_PATH: "/stats-api"
+
+    NEXT_PUBLIC_VISUALIZE_API_HOST: "http://explorer.blockchain.local"
+    NEXT_PUBLIC_VISUALIZE_API_BASE_PATH: "/visualize-api"
+
+    NEXT_PUBLIC_APP_HOST: "explorer.blockchain.local"
+    NEXT_PUBLIC_APP_PROTOCOL: "http"
+
+    NEXT_PUBLIC_NETWORK_NAME: "Awesome chain"
+    NEXT_PUBLIC_NETWORK_SHORT_NAME: "Awesome chain"
+    NEXT_PUBLIC_NETWORK_ID: "1337"
+    NEXT_PUBLIC_NETWORK_CURRENCY_NAME: "Ether"
+    NEXT_PUBLIC_NETWORK_CURRENCY_SYMBOL: "ETH"
+    NEXT_PUBLIC_NETWORK_CURRENCY_DECIMALS: "18"
+
+    NEXT_PUBLIC_HOMEPAGE_CHARTS: "['daily_txs']"
+
+    NEXT_PUBLIC_IS_TESTNET: "true"
+    NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL: "ws"
+    NEXT_PUBLIC_API_SPEC_URL: "https://raw.githubusercontent.com/blockscout/blockscout-api-v2-swagger/main/swagger.yaml"
+  livenessProbe:
+    path: /api/healthz
+    params:
+      initialDelaySeconds: 100
+      periodSeconds: 100
+      timeoutSeconds: 30
+  readinessProbe:
+    path: /api/healthz
+    params:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 30
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    hostname: explorer.blockchain.local
+    paths:
+      - path: /
+        pathType: Prefix
+    tls:
+      enabled: false

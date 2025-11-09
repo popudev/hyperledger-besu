@@ -1,0 +1,69 @@
+{{- if .Values.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "besu-node.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "besu-node.fullname" . }}
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: {{ include "besu-node.fullname" . }}
+    app.kubernetes.io/namespace: {{ .Release.Namespace }}
+    app.kubernetes.io/release: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  {{- end }}
+  {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.hosts (gt (len .Values.ingress.tls.hosts) 0) }}
+  tls:
+    - hosts:
+        {{- range .Values.ingress.tls.hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ if .Values.ingress.tls.secretName }}{{ .Values.ingress.tls.secretName }}{{ else }}{{ include "besu-node.fullname" . }}-tls{{ end }}
+  {{- end }}
+  rules:
+    {{- if .Values.ingress.rpc.host }}
+    - host: {{ .Values.ingress.rpc.host | quote }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.rpc.path }}
+            pathType: {{ .Values.ingress.rpc.pathType }}
+            backend:
+              service:
+                name: {{ include "besu-node.fullname" . }}
+                port:
+                  number: {{ .Values.node.besu.rpc.port }}
+    {{- end }}
+    {{- if .Values.ingress.ws.host }}
+    - host: {{ .Values.ingress.ws.host | quote }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.ws.path }}
+            pathType: {{ .Values.ingress.ws.pathType }}
+            backend:
+              service:
+                name: {{ include "besu-node.fullname" . }}
+                port:
+                  number: {{ .Values.node.besu.ws.port }}
+    {{- end }}
+    {{- if .Values.ingress.graphql.host }}
+    - host: {{ .Values.ingress.graphql.host | quote }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.graphql.path }}
+            pathType: {{ .Values.ingress.graphql.pathType }}
+            backend:
+              service:
+                name: {{ include "besu-node.fullname" . }}
+                port:
+                  number: {{ .Values.node.besu.graphql.port }}
+    {{- end }}
+{{- end }}
+

@@ -58,39 +58,3 @@ spec:
       protocol: TCP
 {{- end }}
 
-
-{{- if and .Values.node.besu.metrics.enabled .Values.node.besu.metrics.serviceMonitorEnabled }}
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: {{ include "besu-node.fullname" . }}-servicemonitor
-  labels:
-    release: monitoring
-    helm.sh/chart: {{ include "besu-node.chart" . }}
-    app: {{ include "besu-node.fullname" . }}
-    chart: {{ include "besu-node.chart" . }}
-    heritage: {{ .Release.Service }}
-    namespace: {{ .Release.Namespace }}
-    app.kubernetes.io/name: {{ include "besu-node.fullname" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: {{ .Release.Name }}
-  namespace: {{ .Release.Namespace }}
-spec:
-  namespaceSelector:
-    matchNames:
-    - {{ .Release.Namespace }}
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ include "besu-node.fullname" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/component: {{ .Release.Name }}
-  endpoints:
-  - port: metrics
-    interval: 15s
-    path: /metrics
-    scheme: http
-    honorLabels: true
-{{- end }}

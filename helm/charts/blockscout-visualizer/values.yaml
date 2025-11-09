@@ -1,0 +1,49 @@
+# Visualizer configuration
+visualizer:
+  image:
+    repository: ghcr.io/blockscout/visualizer
+    tag: latest
+    pullPolicy: Always
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8050
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+  env:
+    VISUALIZER__SERVER__GRPC__ENABLED: "false"
+  livenessProbe:
+    path: /health
+    params:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+  readinessProbe:
+    path: /health
+    params:
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+  ingress:
+    enabled: true
+    className: nginx
+    annotations: 
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    hostname: explorer.blockchain.local
+    paths:
+      - path: /visualize-api(/|$)(.*)
+        pathType: ImplementationSpecific
+    tls:
+      enabled: false

@@ -1,5 +1,3 @@
----
-
 quorumFlags:
   privacy: false
   removeKeysOnDelete: true
@@ -9,8 +7,6 @@ quorumFlags:
 node:
   besu:
     envBesuOpts: ""  
-    metrics:
-      serviceMonitorEnabled: true
     resources:
       cpuLimit: 1
       cpuRequest: 0.5
@@ -18,15 +14,97 @@ node:
       memRequest: "1G"
     account:
       password: 'password'
-  goquorum:
-    metrics:
-      serviceMonitorEnabled: true
-    resources:
-      cpuLimit: 1
-      cpuRequest: 0.1
-      memLimit: "2G"
-      memRequest: "1G"
-    account:
-      password: 'password'
-  tessera:
-    password: 'password'
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    # Annotation cho nginx ingress controller
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Cấu hình cho WebSocket (cần thiết khi sử dụng ws.host)
+    nginx.ingress.kubernetes.io/websocket-services: "rpc-1-besu-node"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  # Cấu hình TLS (tùy chọn)
+  tls:
+    enabled: true
+    # Danh sách hosts cho TLS
+    hosts:
+      - rpc-http.blockchain.local
+      - rpc-ws.blockchain.local
+      - rpc-graphql.blockchain.local
+
+    # Hoặc cung cấp certificate và privateKey để tự động tạo Secret
+    certificate: |
+      -----BEGIN CERTIFICATE-----
+      MIIEWTCCA0GgAwIBAgIUXldFzh8ajgmsGq+vvzWsNRE+jF4wDQYJKoZIhvcNAQEL
+      BQAwgY4xCzAJBgNVBAYTAlZOMRQwEgYDVQQIDAtIbyBDaGkgTWluaDEZMBcGA1UE
+      BwwQSG8gQ2hpIE1pbmggQ2l0eTEZMBcGA1UECgwQQmxvY2tjaGFpbiBMb2NhbDEW
+      MBQGA1UECwwNSVQgRGVwYXJ0bWVudDEbMBkGA1UEAwwSKi5ibG9ja2NoYWluLmxv
+      Y2FsMB4XDTI1MTEwODExNTA0MVoXDTI2MTEwODExNTA0MVowgY4xCzAJBgNVBAYT
+      AlZOMRQwEgYDVQQIDAtIbyBDaGkgTWluaDEZMBcGA1UEBwwQSG8gQ2hpIE1pbmgg
+      Q2l0eTEZMBcGA1UECgwQQmxvY2tjaGFpbiBMb2NhbDEWMBQGA1UECwwNSVQgRGVw
+      YXJ0bWVudDEbMBkGA1UEAwwSKi5ibG9ja2NoYWluLmxvY2FsMIIBIjANBgkqhkiG
+      9w0BAQEFAAOCAQ8AMIIBCgKCAQEA445mGj5TkWwUxA6ypSqPJ4iMg7WNzMsW6gEc
+      hyBQuImWrQ56oYPK/z04fvb75XL0+ptQnAIpCRy+4+iUgA/qoFxnV8JmGcNZEzof
+      7VjXLdmzJ7WGH2gWcR3iLQkbMon/GdKM8q6Olmz3LVQCOIhNMh/AyOZQNd6udR+G
+      Tp7ngy7VDQGZQZyBBx2HrbM0iiYpEOyx/fitJtz6AIx0mk/y+45fPcGvhR6LDC1m
+      uNM/nDvO6A4IdBh33j9HfVMVL2Zg5H+G3M7AZH9ds6L8gqGyBozRp88DEZMphqRB
+      6hZlSOcsPbYUzC7Vv0xflAKY6jADt6y5GR+ERyKDxG9qgUCfGQIDAQABo4GsMIGp
+      MAkGA1UdEwQCMAAwCwYDVR0PBAQDAgXgMHAGA1UdEQRpMGeCEiouYmxvY2tjaGFp
+      bi5sb2NhbIIQYmxvY2tjaGFpbi5sb2NhbIISKi5ibG9ja2NoYWluLmxvY2FsghV0
+      ZXN0LmJsb2NrY2hhaW4ubG9jYWyCFHZwcy5ibG9ja2NoYWluLmxvY2FsMB0GA1Ud
+      DgQWBBQXuRQgW+sH9ubRhhqSEEwpnOKfwDANBgkqhkiG9w0BAQsFAAOCAQEAXM31
+      RdMOsA0vC9JUBrRxWxREnMQ0FV3RstC5uO9WeOmtxCruI1nYGKwzYRRTIc6GTsFq
+      HB7qNPybt5a828V1F6VRMFB7KIbw7/3+X878fdJGsuSs8J/ed3F5Vg1Yy/zNZ4Ja
+      j7HmCrw8ZmcCqgxdSy6T+0O2r1/rWsJviPojr/elJStP8NsnAv7a52+7veNwG62P
+      VBzZ/mOC+ecBYZCck9xQRya01OKwIV0NKkfIb2um3SRvOGL/GASYKCxHCM8miPMg
+      Gx6h3udfULOsRI4CUAMrc8WzuSQON8MzO/oqpLLv1wVJwRIZIS7sIdBYHZfMclaP
+      U3SwLe8OUAYMumh1ZA==
+      -----END CERTIFICATE-----
+
+    privateKey: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDjjmYaPlORbBTE
+      DrKlKo8niIyDtY3MyxbqARyHIFC4iZatDnqhg8r/PTh+9vvlcvT6m1CcAikJHL7j
+      6JSAD+qgXGdXwmYZw1kTOh/tWNct2bMntYYfaBZxHeItCRsyif8Z0ozyro6WbPct
+      VAI4iE0yH8DI5lA13q51H4ZOnueDLtUNAZlBnIEHHYetszSKJikQ7LH9+K0m3PoA
+      jHSaT/L7jl89wa+FHosMLWa40z+cO87oDgh0GHfeP0d9UxUvZmDkf4bczsBkf12z
+      ovyCobIGjNGnzwMRkymGpEHqFmVI5yw9thTMLtW/TF+UApjqMAO3rLkZH4RHIoPE
+      b2qBQJ8ZAgMBAAECggEAEg9jTl4nuQUSVViiyE3LSIyTdWEXiNtN/WK68kUH7wt5
+      dlDtveulNPJ1jUsaJSTlaU3iHQ2lVtwtkM5M2eiZeyJ2T75lptIMm+RrNAXO5yxN
+      5h8Hru6uiEoCQUeFnXJbGSAvMFQXDDyH9hSiq/yyXsHrJa60yz+6CiDnQo5lSrGK
+      pde4c4q6/Yg1KY8WLL9vXlHjb9eILQWTz9qBt0j/VJZ91vFl39z2/ugbdX2oNYZM
+      FsOHdhWgJcQE0cXqteOfVLaJXvda253Ti+KS3p7KIyuFj6nlhQlaswxTNKfr8JRK
+      z+/OZ3zY3wEASinDJjpK1oUlcbz/ih2+y9hQAriPYQKBgQD0bbFvlFcjxd522+Gq
+      1zi73fnq4BdC5iMjMAnkKMfbVmC+76n/oaV691nYy1BUfF+ynpM2dPy2tULJEhNR
+      gdjIoo2vcET2ZgvtsrVQ6NvGeLpzlDsPbCR9/b95oSOj/juHi0xZStDaeKxwWSfG
+      CWizQs+QS1fvmCv/KLBpcBa1OQKBgQDuVDnCqdj3e/c3d48xcoVGrG+WaRrxjlLf
+      F7ZhhkwSX+5z3uwrSgthwJKkjpVF4qasQh2rt8zHhUxeu6J4rGkuZfdf1kV+6eZM
+      LmAFeZ0hay1KxJErBpBHw0oSgy3MoVNL8i/vG6VwvDfpHmqqa+n0RlRMgsZLKjok
+      L7UxPL4Y4QKBgQDyb9adUGn57mmQRNmZJO190VbwMyJ/VVqmrSAycIyCrjM5Tuez
+      yLYkuDAiis57bf1RYl2rlu+NnU3Ht6j3oC3QGwMjbtzH9EGCm02iGcTbH6X3u5+0
+      1VOAr+16C20ZXLHY6D5rFnz/JNAMgzGjCHQT0YGkokZvO+TvqYEIo4eyaQKBgEe5
+      S0S9LtGUGhs0PQDJkThqro5ahURK67+9+CIzc3NYMX/nh7Wja/d4J+mkC2Jjynsu
+      zpUeFF+7Svd7inK8mE7hWugZqQJ/y9IDZtxe9B3ZjmDg9Ts4l3UxXXpixga+Sj4h
+      3bEc5dYensjmYX12Sos8GySHerumMqcvQF1YBXGhAoGAfSYuJc1M2qbLwfmxIXeI
+      ZSAWFj7xEeZuR/E6+AxlZVPQyTTevUH2iLpgWtdh6dMP+rFGizaCN0p5P0L96PG9
+      nZSQrVq/KQGv9KE/1yQWVbTeBXDgbCFpRsvgittKcvN0O7kxGe0zjLuRXWEJsOvS
+      2F30FajOTVhGH+bxiKg22No=
+      -----END PRIVATE KEY-----
+
+  # Cấu hình host cho RPC HTTP
+  rpc:
+    host: rpc-http.blockchain.local
+    path: /
+    pathType: Prefix
+  # Cấu hình host cho WebSocket
+  ws:
+    host: rpc-ws.blockchain.local
+    path: /
+    pathType: Prefix
+  # Cấu hình host cho GraphQL
+  graphql:
+    host: rpc-graphql.blockchain.local
+    path: /
+    pathType: Prefix

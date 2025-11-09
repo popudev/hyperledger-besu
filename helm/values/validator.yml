@@ -1,5 +1,3 @@
----
-
 quorumFlags:
   privacy: false
   removeKeysOnDelete: false
@@ -9,18 +7,9 @@ quorumFlags:
 node:
   besu:
     envBesuOpts: ""  
-    metrics:
-      serviceMonitorEnabled: true
     resources:
       cpuLimit: 1
       cpuRequest: 0.5
       memLimit: "2G"
       memRequest: "1G"
-  goquorum:
-    metrics:
-      serviceMonitorEnabled: true
-    resources:
-      cpuLimit: 1
-      cpuRequest: 0.1
-      memLimit: "2G"
-      memRequest: "1G"
+

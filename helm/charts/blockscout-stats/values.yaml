@@ -1,0 +1,85 @@
+# Stats configuration
+stats:
+  image:
+    repository: ghcr.io/blockscout/stats
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+    metricsPort: 6060
+    targetPort: 8050
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "250m"
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+  env:
+    STATS__SERVER__HTTP__ENABLED: "true"
+    STATS__SERVER__HTTP__ADDR: "0.0.0.0:8050"
+    STATS__SERVER__HTTP__MAX_BODY_SIZE: "2097152"
+    STATS__SERVER__GRPC__ENABLED: "false"
+    STATS__SERVER__GRPC__ADDR: "0.0.0.0:8051"
+    STATS__DEFAULT_SCHEDULE: "0 0 1 * * * *"
+    STATS__FORCE_UPDATE_ON_START: "false"
+    STATS__METRICS__ENABLED: "false"
+    STATS__METRICS__ADDR: "0.0.0.0:6060"
+    STATS__METRICS__ROUTE: "/metrics"
+    STATS__JAEGER__ENABLED: "false"
+    STATS__JAEGER__AGENT_ENDPOINT: "localhost:6831"
+    STATS__TRACING__ENABLED: "true"
+    STATS__TRACING__FORMAT: "default"
+    STATS__BLOCKSCOUT_API_URL: "http://blockscout"
+    STATS__BLOCKSCOUT_DB_URL: "postgresql://blockscout:ceWb1MeLBEeOIfk65gU8EjF8@blockscout-db:5432/blockscout"
+    STATS__CREATE_DATABASE: "true"
+    STATS__RUN_MIGRATIONS: "true"
+  livenessProbe:
+    path: /health
+    params:
+      initialDelaySeconds: 100
+      periodSeconds: 100
+      timeoutSeconds: 30
+  readinessProbe:
+    path: /health
+    params:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 60
+  ingress:
+    enabled: true
+    className: nginx
+    annotations: 
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    hostname: explorer.blockchain.local
+    paths:
+        - path: /stats-api(/|$)(.*)
+          pathType: ImplementationSpecific
+    tls:
+      enabled: false
+
+# Database configuration
+db:
+  image:
+    repository: postgres
+    tag: "17"
+    pullPolicy: IfNotPresent
+  database: stats
+  user: stats
+  password: n0uejXPl61ci6ldCuE2gQU5Y
+  storage:
+    size: 10Gi
+    reclaimPolicy: Delete
+  resources:
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+    requests:
+      memory: "256Mi"
+      cpu: "250m"

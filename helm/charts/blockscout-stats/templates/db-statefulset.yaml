@@ -1,0 +1,117 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "blockscout-stats.fullname" . }}-db
+  labels:
+    {{- include "blockscout-stats.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+spec:
+  serviceName: {{ include "blockscout-stats.fullname" . }}-db
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "blockscout-stats.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: database
+  template:
+    metadata:
+      labels:
+        {{- include "blockscout-stats.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: database
+    spec:
+      securityContext:
+        fsGroup: 2000
+      initContainers:
+      # Fix permissions for PostgreSQL data directory
+      - name: volume-permission-db
+        image: postgres:17
+        command:
+          - sh
+          - -c
+          - |
+            if [ ! -d /var/lib/postgresql/data ] || [ -z "$(ls -A /var/lib/postgresql/data)" ]; then
+              echo "Initializing PostgreSQL data directory..."
+              mkdir -p /var/lib/postgresql/data
+            fi
+            chown -R 2000:2000 /var/lib/postgresql/data
+            chmod 700 /var/lib/postgresql/data
+            echo "PostgreSQL data directory initialized."
+        volumeMounts:
+          - name: data
+            mountPath: /var/lib/postgresql/data
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: postgres
+        securityContext:
+          runAsUser: 2000
+          runAsGroup: 2000
+          runAsNonRoot: true
+        image: "{{ .Values.db.image.repository }}:{{ .Values.db.image.tag }}"
+        imagePullPolicy: {{ .Values.db.image.pullPolicy }}
+        command:
+          - /usr/local/bin/docker-entrypoint.sh
+        args:
+          - postgres
+          - -c
+          - max_connections=200
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.db.database | quote }}
+        - name: POSTGRES_USER
+          value: {{ .Values.db.user | quote }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "blockscout-stats.fullname" . }}-db
+              key: password
+        ports:
+        - name: postgres
+          containerPort: 5432
+          protocol: TCP
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+        - name: shm
+          mountPath: /dev/shm
+        resources:
+          {{- toYaml .Values.db.resources | nindent 10 }}
+        livenessProbe:
+          exec:
+            command:
+              - pg_isready
+              - -U
+              - {{ .Values.db.user }}
+              - -d
+              - {{ .Values.db.database }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        readinessProbe:
+          exec:
+            command:
+              - pg_isready
+              - -U
+              - {{ .Values.db.user }}
+              - -d
+              - {{ .Values.db.database }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+      volumes:
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 256Mi
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ include "blockscout-stats.fullname" . }}-db-storage
+      resources:
+        requests:
+          storage: {{ .Values.db.storage.size }}
+

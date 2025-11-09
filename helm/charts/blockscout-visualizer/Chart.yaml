@@ -1,0 +1,15 @@
+apiVersion: v2
+name: blockscout-visualizer
+description: Blockscout visualizer service
+type: application
+version: 0.1.0
+appVersion: latest
+keywords:
+  - blockscout
+  - visualizer
+  - explorer
+  - ethereum
+home: https://github.com/blockscout/blockscout
+maintainers:
+  - name: Blockscout Team
+

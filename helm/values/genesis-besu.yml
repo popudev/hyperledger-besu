@@ -1,4 +1,3 @@
----
 quorumFlags:
   removeGenesisOnDelete: true
 

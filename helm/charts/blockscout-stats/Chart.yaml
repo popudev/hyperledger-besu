@@ -1,0 +1,15 @@
+apiVersion: v2
+name: blockscout-stats
+description: Blockscout stats service
+type: application
+version: 0.1.0
+appVersion: latest
+keywords:
+  - blockscout
+  - stats
+  - explorer
+  - ethereum
+home: https://github.com/blockscout/blockscout-rs/tree/main/stats
+maintainers:
+  - name: Blockscout Team
+

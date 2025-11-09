@@ -1,0 +1,16 @@
+apiVersion: v2
+name: blockscout-frontend
+description: Blockscout frontend web interface
+type: application
+version: 0.1.0
+appVersion: latest
+keywords:
+  - blockscout
+  - frontend
+  - explorer
+  - ethereum
+home: https://github.com/blockscout/frontend
+maintainers:
+  - name: Blockscout Team
+icon: https://raw.githubusercontent.com/blockscout/blockscout/master/apps/block_scout_web/assets/static/images/favicon.ico
+

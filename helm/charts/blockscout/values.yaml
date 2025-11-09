@@ -1,0 +1,121 @@
+# Backend configuration
+backend:
+  image:
+    repository: ghcr.io/blockscout/blockscout
+    tag: frontend-main
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 4000
+  resources:
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+  env:
+    ETHEREUM_JSONRPC_VARIANT: "geth"
+    ETHEREUM_JSONRPC_HTTP_URL: "http://besu-node-rpc-1-0.besu-node-rpc-1.besu.svc.cluster.local:8545/"
+    ETHEREUM_JSONRPC_WS_URL: "ws://besu-node-rpc-1-0.besu-node-ws-1.besu.svc.cluster.local:8546/"
+    DISABLE_FILE_LOGGING: "false"
+    ETHEREUM_JSONRPC_TRANSPORT: "http"
+    ETHEREUM_JSONRPC_DISABLE_ARCHIVE_BALANCES: "false"
+    ETHEREUM_JSONRPC_TRACE_URL: "http://besu-node-rpc-1-0.besu-node-rpc-1.besu.svc.cluster.local:8545/"
+    SECRET_KEY_BASE: "56NtB48ear7+wMSf0IQuWDAAazhpb31qyc7GiyspBP2vh7t5zlCsF5QDv76chXeN"
+    PORT: "4000"
+    DISABLE_MARKET: "true"
+    POOL_SIZE: "80"
+    POOL_SIZE_API: "10"
+    ECTO_USE_SSL: "false"
+    HEART_BEAT_TIMEOUT: "30"
+    ADMIN_PANEL_ENABLED: "false"
+    API_V1_READ_METHODS_DISABLED: "false"
+    API_V1_WRITE_METHODS_DISABLED: "false"
+    RE_CAPTCHA_DISABLED: "false"
+    TXS_STATS_DAYS_TO_COMPILE_AT_INIT: "10"
+    COIN_BALANCE_HISTORY_DAYS: "90"
+    DECODE_NOT_A_CONTRACT_CALLS: "true"
+    ACCOUNT_ENABLED: "false"
+    ACCOUNT_REDIS_URL: "redis://redis-db:6379"
+    MICROSERVICE_SC_VERIFIER_TYPE: "eth_bytecode_db"
+    MICROSERVICE_VISUALIZE_SOL2UML_ENABLED: "true"
+    MICROSERVICE_VISUALIZE_SOL2UML_URL: "http://blockscout-visualizer/"
+    MICROSERVICE_SIG_PROVIDER_ENABLED: "false"
+    MICROSERVICE_SIG_PROVIDER_URL: "http://sig-provider:8050/"
+    MICROSERVICE_ACCOUNT_ABSTRACTION_URL: "http://user-ops-indexer:8050/"
+    NFT_MEDIA_HANDLER_ENABLED: "true"
+    NFT_MEDIA_HANDLER_REMOTE_DISPATCHER_NODE_MODE_ENABLED: "true"
+    NFT_MEDIA_HANDLER_BUCKET_FOLDER: "/folder_1"
+    RELEASE_NODE: "producer@172.18.0.4"
+    RELEASE_DISTRIBUTION: "name"
+    RELEASE_COOKIE: "secret_cookie"
+  command:
+    - /bin/sh
+  args:
+    - -c
+    - bin/blockscout start
+  init:
+    enabled: true
+    command:
+      - /bin/sh
+    args:
+      - -c
+      - bin/blockscout eval "Elixir.Explorer.ReleaseTasks.create_and_migrate()"
+  livenessProbe:
+    path: /api/health/liveness
+    params:
+      initialDelaySeconds: 100
+      periodSeconds: 100
+      timeoutSeconds: 30
+  readinessProbe:
+    path: /api/health/readiness
+    params:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 60
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    hostname: explorer.blockchain.local
+    paths:
+      - path: /api
+        pathType: Prefix
+      - path: /socket
+        pathType: Prefix
+      - path: /public-metrics
+        pathType: Prefix
+      - path: /auth/auth0
+        pathType: Exact
+      - path: /auth/auth0/callback
+        pathType: Exact
+      - path: /auth/logout
+        pathType: Exact
+    tls:
+      enabled: false
+
+# Database configuration
+db:
+  image:
+    repository: postgres
+    tag: "17"
+    pullPolicy: IfNotPresent
+  database: blockscout
+  user: blockscout
+  password: ceWb1MeLBEeOIfk65gU8EjF8
+  storage:
+    size: 10Gi
+    reclaimPolicy: Delete
+  resources:
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+    requests:
+      memory: "256Mi"
+      cpu: "250m"

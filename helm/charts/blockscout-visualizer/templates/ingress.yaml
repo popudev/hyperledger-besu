@@ -1,0 +1,37 @@
+{{- if .Values.visualizer.ingress.enabled -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "blockscout-visualizer.fullname" . }}
+  labels:
+    {{- include "blockscout-visualizer.labels" . | nindent 4 }}
+  {{- with .Values.visualizer.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.visualizer.ingress.className }}
+  ingressClassName: {{ .Values.visualizer.ingress.className }}
+  {{- end }}
+  {{- if .Values.visualizer.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.visualizer.ingress.hostname }}
+    secretName: {{ include "blockscout-visualizer.fullname" . }}-tls
+  {{- end }}
+  rules:
+  - host: {{ .Values.visualizer.ingress.hostname }}
+    http:
+      paths:
+      {{- range .Values.visualizer.ingress.paths }}
+      - path: {{ .path }}
+        pathType: {{ .pathType }}
+        backend:
+          service:
+            name: {{ include "blockscout-visualizer.fullname" $ }}
+            port:
+              number: {{ $.Values.visualizer.service.port }}
+      {{- end }}
+{{- end }}
+

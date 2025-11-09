@@ -66,11 +66,7 @@ spec:
               echo "Creating config ..."
               FOLDER_PATH=$(quorum-genesis-tool \
                 --consensus {{ .Values.rawGenesisConfig.genesis.config.algorithm.consensus }} \
-{{ if .Values.rawGenesisConfig.blockchain.nodes.generate }}
                 --validators {{ .Values.rawGenesisConfig.blockchain.nodes.count }} \
-{{ else }}
-                --validators 0 \
-{{ end }}
                 --members 0 \
                 --bootnodes 0 \
                 --chainID {{ .Values.rawGenesisConfig.genesis.config.chainId }} \
@@ -80,17 +76,11 @@ spec:
                 --difficulty {{ .Values.rawGenesisConfig.genesis.difficulty }} \
                 --gasLimit {{ .Values.rawGenesisConfig.genesis.gasLimit }} \
                 --coinbase {{ .Values.rawGenesisConfig.genesis.coinbase }} \
-{{ if .Values.rawGenesisConfig.blockchain.accountPassword }}
                 --accountPassword {{ .Values.rawGenesisConfig.blockchain.accountPassword }} \
-{{ end }}
                 --maxCodeSize {{ .Values.rawGenesisConfig.genesis.maxCodeSize }} \
                 --txnSizeLimit {{ .Values.rawGenesisConfig.genesis.txnSizeLimit }} \
                 --quickstartDevAccounts {{ .Values.rawGenesisConfig.genesis.includeQuickStartAccounts }} \
-{{ if .Values.rawGenesisConfig.genesis.alloc }}
-                --alloc '{{ .Values.rawGenesisConfig.genesis.alloc | toJson }}' \
-{{ else }}
                 --alloc '{}' \
-{{ end }}
                 --outputPath /generated-config \
                 | tail -1 \
                 | sed -e "s/^Artifacts in folder: //")

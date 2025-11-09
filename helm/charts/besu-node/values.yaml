@@ -1,5 +1,3 @@
----
-
 quorumFlags:
   privacy: false
   # this will erase keys - so be careful with this on validators
@@ -8,8 +6,8 @@ quorumFlags:
   usesBootnodes: true # set this to true if the network you are connecting to use a bootnode/s that are deployed in the cluster 
 
 storage:
-  sizeLimit: "20Gi"
-  pvcSizeLimit: "20Gi"
+  sizeLimit: "10Gi"
+  pvcSizeLimit: "10Gi"
   # NOTE: when you set this to Retain, the volume WILL persist after the chart is delete and you need to manually delete it
   reclaimPolicy: "Delete" # choose from: Delete | Retain
 
@@ -64,9 +62,7 @@ node:
     metrics:
       enabled: true
       host: "0.0.0.0"
-      port: 9545
-      # enable if using prometheus-stack metrics monitoring
-      serviceMonitorEnabled: false      
+      port: 9545  
     metricsPush:
       enabled: false
       host: "5.5.5.5"
@@ -109,6 +105,53 @@ node:
     port: 9000
     tpport: 9080
     q2tport: 9101
+
+ingress:
+  enabled: false
+  ingressClassName: nginx
+  annotations:
+    # Annotation cho nginx ingress controller
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Cấu hình cho WebSocket (cần thiết khi sử dụng ws.host)
+    # nginx.ingress.kubernetes.io/websocket-services: "besu-node-release-name"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  # Cấu hình TLS (tùy chọn)
+  tls:
+    enabled: false
+    # Danh sách hosts cho TLS
+    hosts: []
+      # - rpc.besu-node.local
+      # - ws.besu-node.local
+      # - graphql.besu-node.local
+    # Certificate và private key (phải là plain text, template sẽ tự động encode base64)
+    # Ví dụ: certificate: |
+    #   -----BEGIN CERTIFICATE-----
+    #   ...
+    #   -----END CERTIFICATE-----
+    certificate: ""
+    # Ví dụ: privateKey: |
+    #   -----BEGIN PRIVATE KEY-----
+    #   ...
+    #   -----END PRIVATE KEY-----
+    privateKey: ""
+    # Tên secret (mặc định sẽ là {release-name}-tls nếu để trống)
+    secretName: ""
+  # Cấu hình host cho RPC HTTP
+  rpc:
+    host: ""  # Ví dụ: rpc.besu-node.local
+    path: /
+    pathType: Prefix
+  # Cấu hình host cho WebSocket
+  ws:
+    host: ""  # Ví dụ: ws.besu-node.local
+    path: /
+    pathType: Prefix
+  # Cấu hình host cho GraphQL
+  graphql:
+    host: ""  # Ví dụ: graphql.besu-node.local
+    path: /
+    pathType: Prefix
 
 image:
   besu:

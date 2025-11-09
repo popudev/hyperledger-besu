@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "blockscout-visualizer.fullname" . }}
+  labels:
+    {{- include "blockscout-visualizer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.visualizer.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "blockscout-visualizer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "blockscout-visualizer.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: visualizer
+        image: "{{ .Values.visualizer.image.repository }}:{{ .Values.visualizer.image.tag }}"
+        imagePullPolicy: {{ .Values.visualizer.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 8050
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: {{ include "blockscout-visualizer.fullname" . }}-env
+        resources:
+          {{- toYaml .Values.visualizer.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.visualizer.livenessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.visualizer.livenessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.visualizer.readinessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.visualizer.readinessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+

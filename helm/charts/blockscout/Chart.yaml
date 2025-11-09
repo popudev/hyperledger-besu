@@ -1,0 +1,16 @@
+apiVersion: v2
+name: blockscout
+description: Blockscout blockchain explorer
+type: application
+version: 0.1.0
+appVersion: frontend-main
+keywords:
+  - blockscout
+  - blockchain
+  - explorer
+  - ethereum
+home: https://github.com/blockscout/blockscout
+maintainers:
+  - name: Blockscout Team
+icon: https://raw.githubusercontent.com/blockscout/blockscout/master/apps/block_scout_web/assets/static/images/favicon.ico
+
