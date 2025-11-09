@@ -112,7 +112,6 @@ spec:
       name: data
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: {{ include "blockscout.fullname" . }}-db-storage
       resources:
         requests:
           storage: {{ .Values.db.storage.size }}
