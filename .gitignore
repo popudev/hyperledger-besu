@@ -1,0 +1,175 @@
+# ============================================
+# IDE và Editor
+# ============================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# ============================================
+# OS Files
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.log
+
+# ============================================
+# Docker và Container
+# ============================================
+*.tar.gz
+*.tar
+docker-images/
+*.docker-image
+docker-compose.override.yml
+
+# ============================================
+# Certificates và Keys (BẢO MẬT)
+# ============================================
+# Lưu ý: Chỉ ignore các file tạm, không ignore các file cấu hình
+cert/*.key
+cert/*.pem
+cert/*.crt
+cert/*.csr
+cert/*.p12
+cert/*.pfx
+cert/*.jks
+*.key
+*.pem
+*.crt
+!cert/openssl.conf
+!cert/README.md
+!cert/generate-cert.sh
+
+# ============================================
+# Kubernetes và Helm
+# ============================================
+# Helm chart dependencies (đã có trong helm-charts/.gitignore)
+# K3d cluster files
+k3d/clusters/
+*.kubeconfig
+*.kubeconfig.local
+
+# ============================================
+# Build Artifacts và Temporary Files
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+dist/
+build/
+out/
+target/
+
+# ============================================
+# Logs
+# ============================================
+*.log
+logs/
+*.log.*
+
+# ============================================
+# Environment Variables
+# ============================================
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+!.env.template
+
+# ============================================
+# Node.js (cho thư mục solidity - đã có .gitignore riêng)
+# ============================================
+# Chỉ ignore ở root nếu có
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+# Lưu ý: solidity/ đã có .gitignore riêng
+
+# ============================================
+# Python (nếu có)
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# ============================================
+# Extensions và Archives (tạm thời)
+# ============================================
+# Chỉ ignore các file tạm, giữ lại các file cần thiết
+extensions/*.tmp
+extensions/*.bak
+
+# ============================================
+# Repo files (tạm thời)
+# ============================================
+# Giữ lại các file .tgz cần thiết, chỉ ignore các file tạm
+repo/*.tmp
+repo/*.bak
+
+# ============================================
+# Images và Media (tạm thời)
+# ============================================
+images/*.tmp
+images/*.bak
+images/*.old
+
+# ============================================
+# DNS và Network Config (tạm thời)
+# ============================================
+dns/*.tmp
+dns/*.bak
+
+# ============================================
+# Bash Scripts - Temporary
+# ============================================
+bash/*.tmp
+bash/*.bak
+bash/*.sh~
+
+# ============================================
+# Ingress - Temporary
+# ============================================
+ingress/*.tmp
+ingress/*.bak
+
+# ============================================
+# Git
+# ============================================
+*.orig
+*.rej
+
+# ============================================
+# Coverage và Testing
+# ============================================
+coverage/
+.nyc_output/
+*.lcov
+
+# ============================================
+# Misc
+# ============================================
+*.pid
+*.seed
+*.pid.lock
+.cache/
+

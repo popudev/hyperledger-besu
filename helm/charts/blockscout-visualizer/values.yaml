@@ -1,7 +1,8 @@
 # Visualizer configuration
 visualizer:
   image:
-    repository: ghcr.io/blockscout/visualizer
+    repository: ghcr.io
+    name: blockscout/visualizer
     tag: latest
     pullPolicy: Always
   replicaCount: 1

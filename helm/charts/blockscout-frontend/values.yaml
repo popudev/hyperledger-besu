@@ -1,7 +1,8 @@
 # Frontend configuration
 frontend:
   image:
-    repository: ghcr.io/blockscout/frontend
+    repository: ghcr.io
+    name: blockscout/frontend
     tag: latest
     pullPolicy: IfNotPresent
   replicaCount: 1

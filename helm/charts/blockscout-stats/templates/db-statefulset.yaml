@@ -47,7 +47,7 @@ spec:
           runAsUser: 2000
           runAsGroup: 2000
           runAsNonRoot: true
-        image: "{{ .Values.db.image.repository }}:{{ .Values.db.image.tag }}"
+        image: "{{ .Values.db.image.repository }}/{{ .Values.db.image.name }}:{{ .Values.db.image.tag }}"
         imagePullPolicy: {{ .Values.db.image.pullPolicy }}
         command:
           - /usr/local/bin/docker-entrypoint.sh

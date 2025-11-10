@@ -30,7 +30,7 @@ spec:
             echo "Database is ready!"
       containers:
       - name: stats
-        image: "{{ .Values.stats.image.repository }}:{{ .Values.stats.image.tag }}"
+        image: "{{ .Values.stats.image.repository }}/{{ .Values.stats.image.name }}:{{ .Values.stats.image.tag }}"
         imagePullPolicy: {{ .Values.stats.image.pullPolicy }}
         ports:
         - name: http

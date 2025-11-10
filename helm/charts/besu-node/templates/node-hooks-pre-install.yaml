@@ -28,7 +28,7 @@ spec:
       restartPolicy: "OnFailure"
       containers:
         - name: {{ include "besu-node.fullname" . }}-pre-start-hook
-          image: {{ .Values.image.hooks.repository }}:{{ .Values.image.hooks.tag }}
+          image: {{ .Values.image.hooks.repository }}/{{ .Values.image.hooks.name }}:{{ .Values.image.hooks.tag }}
           imagePullPolicy: {{ .Values.image.besu.pullPolicy }}
           securityContext:
             runAsUser: 0

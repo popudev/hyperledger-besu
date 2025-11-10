@@ -1,0 +1,32 @@
+{
+  "name": "besu-solidity-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts cho Hyperledger Besu blockchain với Hardhat",
+  "main": "hardhat.config.ts",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:gas": "REPORT_GAS=true hardhat test",
+    "deploy:hello": "hardhat ignition deploy ignition/modules/Hello.ts --network besu",
+    "deploy:mytoken": "hardhat ignition deploy ignition/modules/MyToken.ts --network besu",
+    "deploy:lock": "hardhat ignition deploy ignition/modules/Lock.ts --network besu",
+    "verify": "hardhat verify --network besu",
+    "node": "hardhat node",
+    "clean": "hardhat clean"
+  },
+  "keywords": [
+    "solidity",
+    "smart-contracts",
+    "hardhat",
+    "besu",
+    "blockchain",
+    "ethereum"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@nomicfoundation/hardhat-verify": "^2.1.3",
+    "hardhat": "^2.27.0"
+  }
+}

@@ -1,7 +1,8 @@
 # Stats configuration
 stats:
   image:
-    repository: ghcr.io/blockscout/stats
+    repository: ghcr.io
+    name: blockscout/stats
     tag: latest
     pullPolicy: IfNotPresent
   replicaCount: 1
@@ -67,7 +68,8 @@ stats:
 # Database configuration
 db:
   image:
-    repository: postgres
+    repository: docker.io
+    name: postgres
     tag: "17"
     pullPolicy: IfNotPresent
   database: stats

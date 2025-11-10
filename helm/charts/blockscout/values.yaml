@@ -1,7 +1,8 @@
 # Backend configuration
 backend:
   image:
-    repository: ghcr.io/blockscout/blockscout
+    repository: ghcr.io
+    name: blockscout/blockscout
     tag: frontend-main
     pullPolicy: IfNotPresent
   replicaCount: 1
@@ -103,7 +104,8 @@ backend:
 # Database configuration
 db:
   image:
-    repository: postgres
+    repository: docker.io
+    name: postgres
     tag: "17"
     pullPolicy: IfNotPresent
   database: blockscout

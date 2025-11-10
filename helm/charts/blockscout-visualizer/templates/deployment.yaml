@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: visualizer
-        image: "{{ .Values.visualizer.image.repository }}:{{ .Values.visualizer.image.tag }}"
+        image: "{{ .Values.visualizer.image.repository }}/{{ .Values.visualizer.image.name }}:{{ .Values.visualizer.image.tag }}"
         imagePullPolicy: {{ .Values.visualizer.image.pullPolicy }}
         ports:
         - name: http

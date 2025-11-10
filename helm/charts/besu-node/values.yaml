@@ -155,15 +155,18 @@ ingress:
 
 image:
   besu:
-    repository: hyperledger/besu
+    repository: docker.io
+    name: hyperledger/besu
     tag: 24.12.1
     pullPolicy: IfNotPresent
   tessera:
-    repository: quorumengineering/tessera
+    repository: docker.io
+    name: quorumengineering/tessera
     tag: 24.4
     pullPolicy: IfNotPresent
   hooks:
-    repository: consensys/quorum-k8s-hooks
+    repository: docker.io
+    name: consensys/quorum-k8s-hooks
     tag: qgt-0.2.18
     pullPolicy: IfNotPresent
 

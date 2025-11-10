@@ -31,7 +31,7 @@ spec:
       {{- if and .Values.backend.init.enabled .Values.backend.init.command }}
       # Run database migrations
       - name: init-migrations
-        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+        image: "{{ .Values.backend.image.repository }}/{{ .Values.backend.image.name }}:{{ .Values.backend.image.tag }}"
         imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
         {{- with .Values.backend.init.command }}
         command: {{ . | toYaml | nindent 10 }}
@@ -47,7 +47,7 @@ spec:
       {{- end }}
       containers:
       - name: backend
-        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+        image: "{{ .Values.backend.image.repository }}/{{ .Values.backend.image.name }}:{{ .Values.backend.image.tag }}"
         imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
         {{- if .Values.backend.command }}
         command:

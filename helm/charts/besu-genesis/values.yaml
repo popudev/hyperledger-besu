@@ -27,6 +27,7 @@ rawGenesisConfig:
 
 
 image:
-  repository: consensys/quorum-k8s-hooks
+  repository: docker.io/consensys
+  name: quorum-k8s-hooks
   tag: qgt-0.2.20 
   pullPolicy: IfNotPresent

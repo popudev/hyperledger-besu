@@ -59,7 +59,7 @@ spec:
       
 {{- if .Values.quorumFlags.privacy }}
       - name: {{ .Release.Name }}-tessera
-        image: {{ .Values.image.tessera.repository }}:{{ .Values.image.tessera.tag }}
+        image: {{ .Values.image.tessera.repository }}/{{ .Values.image.tessera.name }}:{{ .Values.image.tessera.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         resources:
           requests:
@@ -165,7 +165,7 @@ spec:
 
 
       - name: {{ .Release.Name }}-besu
-        image: {{ .Values.image.besu.repository }}:{{ .Values.image.besu.tag }}
+        image: {{ .Values.image.besu.repository }}/{{ .Values.image.besu.name }}:{{ .Values.image.besu.tag }}
         imagePullPolicy: {{ .Values.image.besu.pullPolicy }}
         resources:
           requests:

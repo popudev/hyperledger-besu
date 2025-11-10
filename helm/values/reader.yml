@@ -27,7 +27,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
   # Cấu hình TLS (tùy chọn)
   tls:
-    enabled: true
+    enabled: false
     # Danh sách hosts cho TLS
     hosts:
       - rpc-http.blockchain.local
