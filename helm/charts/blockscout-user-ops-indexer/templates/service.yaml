@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: { { include "blockscout-user-ops-indexer.fullname" . } }
+  labels: { { - include "blockscout-user-ops-indexer.labels" . | nindent 4 } }
+spec:
+  type: { { .Values.userOpsIndexer.service.type } }
+  ports:
+    - port: { { .Values.userOpsIndexer.service.httpPort } }
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: { { .Values.userOpsIndexer.service.grpcPort } }
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+    - port: { { .Values.userOpsIndexer.service.metricsPort } }
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector: { { - include "blockscout-user-ops-indexer.selectorLabels" . | nindent 4 } }

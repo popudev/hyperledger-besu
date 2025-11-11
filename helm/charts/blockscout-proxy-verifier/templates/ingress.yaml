@@ -1,0 +1,37 @@
+{{- if .Values.proxyVerifier.ingress.enabled -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "blockscout-proxy-verifier.fullname" . }}
+  labels:
+    {{- include "blockscout-proxy-verifier.labels" . | nindent 4 }}
+  {{- with .Values.proxyVerifier.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.proxyVerifier.ingress.className }}
+  ingressClassName: {{ .Values.proxyVerifier.ingress.className }}
+  {{- end }}
+  {{- if .Values.proxyVerifier.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.proxyVerifier.ingress.hostname }}
+    secretName: {{ include "blockscout-proxy-verifier.fullname" . }}-tls
+  {{- end }}
+  rules:
+  - host: {{ .Values.proxyVerifier.ingress.hostname }}
+    http:
+      paths:
+      {{- range .Values.proxyVerifier.ingress.paths }}
+      - path: {{ .path }}
+        pathType: {{ .pathType }}
+        backend:
+          service:
+            name: {{ include "blockscout-proxy-verifier.fullname" $ }}
+            port:
+              number: {{ $.Values.proxyVerifier.service.httpPort }}
+      {{- end }}
+{{- end }}
+

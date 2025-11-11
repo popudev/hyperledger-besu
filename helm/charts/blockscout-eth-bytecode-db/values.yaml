@@ -1,0 +1,55 @@
+# Eth-bytecode-db configuration
+ethBytecodeDb:
+  image:
+    repository: ghcr.io
+    name: blockscout/eth-bytecode-db
+    tag: latest
+    pullPolicy: Always
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8050
+    targetPort: 8050
+    metricsPort: 6060
+    metricsTargetPort: 6060
+  metrics:
+    enabled: false
+  resources:
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+  env: {}
+    # ETH_BYTECODE_DB__VERIFIER__HTTP_URL: "http://smart-contract-verifier:8050"
+    # ETH_BYTECODE_DB__METRICS__ENABLED: "false"
+    # ETH_BYTECODE_DB__METRICS__ADDR: "0.0.0.0:6060"
+  livenessProbe:
+    path: /health?service=
+    params:
+      initialDelaySeconds: 100
+      periodSeconds: 100
+      timeoutSeconds: 30
+      failureThreshold: 3
+  readinessProbe:
+    path: /health?service=
+    params:
+      initialDelaySeconds: 100
+      periodSeconds: 100
+      timeoutSeconds: 30
+      failureThreshold: 3
+  ingress:
+    enabled: false
+    className: nginx
+    annotations: 
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    hostname: explorer.blockchain.local
+    paths:
+      - path: /eth-bytecode-db(/|$)(.*)
+        pathType: ImplementationSpecific
+    tls:
+      enabled: false
+

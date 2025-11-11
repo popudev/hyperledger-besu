@@ -1,0 +1,15 @@
+apiVersion: v2
+name: blockscout-eth-bytecode-db
+description: Blockscout eth-bytecode-db service
+type: application
+version: 0.1.0
+appVersion: latest
+keywords:
+  - blockscout
+  - eth-bytecode-db
+  - explorer
+  - ethereum
+home: https://github.com/blockscout/blockscout
+maintainers:
+  - name: Blockscout Team
+

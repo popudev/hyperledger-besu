@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "blockscout-smart-contract-verifier.fullname" . }}
+  labels:
+    {{- include "blockscout-smart-contract-verifier.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.smartContractVerifier.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "blockscout-smart-contract-verifier.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "blockscout-smart-contract-verifier.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: smart-contract-verifier
+        image: "{{ .Values.smartContractVerifier.image.repository }}/{{ .Values.smartContractVerifier.image.name }}:{{ .Values.smartContractVerifier.image.tag }}"
+        imagePullPolicy: {{ .Values.smartContractVerifier.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.smartContractVerifier.service.httpTargetPort }}
+          protocol: TCP
+        {{- if .Values.smartContractVerifier.grpc.enabled }}
+        - name: grpc
+          containerPort: {{ .Values.smartContractVerifier.service.grpcTargetPort }}
+          protocol: TCP
+        {{- end }}
+        {{- if .Values.smartContractVerifier.metrics.enabled }}
+        - name: metrics
+          containerPort: {{ .Values.smartContractVerifier.service.metricsTargetPort }}
+          protocol: TCP
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "blockscout-smart-contract-verifier.fullname" . }}-env
+        env:
+        - name: SMART_CONTRACT_VERIFIER__SERVER__HTTP__ADDR
+          value: "0.0.0.0:{{ .Values.smartContractVerifier.service.httpTargetPort }}"
+        {{- if .Values.smartContractVerifier.grpc.enabled }}
+        - name: SMART_CONTRACT_VERIFIER__SERVER__GRPC__ENABLED
+          value: "true"
+        - name: SMART_CONTRACT_VERIFIER__SERVER__GRPC__ADDR
+          value: "0.0.0.0:{{ .Values.smartContractVerifier.service.grpcTargetPort }}"
+        {{- end }}
+        {{- if .Values.smartContractVerifier.metrics.enabled }}
+        - name: SMART_CONTRACT_VERIFIER__METRICS__ENABLED
+          value: "true"
+        - name: SMART_CONTRACT_VERIFIER__METRICS__ADDR
+          value: "0.0.0.0:{{ .Values.smartContractVerifier.service.metricsTargetPort }}"
+        {{- end }}
+        resources:
+          {{- toYaml .Values.smartContractVerifier.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.smartContractVerifier.livenessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.smartContractVerifier.livenessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.smartContractVerifier.readinessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.smartContractVerifier.readinessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+

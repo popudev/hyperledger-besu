@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: { { include "blockscout-sig-provider.fullname" . } }
+  labels: { { - include "blockscout-sig-provider.labels" . | nindent 4 } }
+spec:
+  type: { { .Values.sigProvider.service.type } }
+  ports:
+    - port: { { .Values.sigProvider.service.port } }
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector: { { - include "blockscout-sig-provider.selectorLabels" . | nindent 4 } }

@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "blockscout-user-ops-indexer.fullname" . }}
+  labels:
+    {{- include "blockscout-user-ops-indexer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.userOpsIndexer.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "blockscout-user-ops-indexer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "blockscout-user-ops-indexer.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: user-ops-indexer
+        image: "{{ .Values.userOpsIndexer.image.repository }}/{{ .Values.userOpsIndexer.image.name }}:{{ .Values.userOpsIndexer.image.tag }}"
+        imagePullPolicy: {{ .Values.userOpsIndexer.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.userOpsIndexer.service.httpTargetPort }}
+          protocol: TCP
+        - name: grpc
+          containerPort: {{ .Values.userOpsIndexer.service.grpcTargetPort }}
+          protocol: TCP
+        - name: metrics
+          containerPort: {{ .Values.userOpsIndexer.service.metricsTargetPort }}
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: {{ include "blockscout-user-ops-indexer.fullname" . }}-env
+        resources:
+          {{- toYaml .Values.userOpsIndexer.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.userOpsIndexer.livenessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.userOpsIndexer.livenessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.userOpsIndexer.readinessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.userOpsIndexer.readinessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+

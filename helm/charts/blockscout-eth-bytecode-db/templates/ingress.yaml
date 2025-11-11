@@ -1,0 +1,37 @@
+{{- if .Values.ethBytecodeDb.ingress.enabled -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "blockscout-eth-bytecode-db.fullname" . }}
+  labels:
+    {{- include "blockscout-eth-bytecode-db.labels" . | nindent 4 }}
+  {{- with .Values.ethBytecodeDb.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ethBytecodeDb.ingress.className }}
+  ingressClassName: {{ .Values.ethBytecodeDb.ingress.className }}
+  {{- end }}
+  {{- if .Values.ethBytecodeDb.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.ethBytecodeDb.ingress.hostname }}
+    secretName: {{ include "blockscout-eth-bytecode-db.fullname" . }}-tls
+  {{- end }}
+  rules:
+  - host: {{ .Values.ethBytecodeDb.ingress.hostname }}
+    http:
+      paths:
+      {{- range .Values.ethBytecodeDb.ingress.paths }}
+      - path: {{ .path }}
+        pathType: {{ .pathType }}
+        backend:
+          service:
+            name: {{ include "blockscout-eth-bytecode-db.fullname" $ }}
+            port:
+              number: {{ $.Values.ethBytecodeDb.service.port }}
+      {{- end }}
+{{- end }}
+

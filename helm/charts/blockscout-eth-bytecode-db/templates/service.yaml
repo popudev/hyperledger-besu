@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "blockscout-eth-bytecode-db.fullname" . }}
+  labels:
+    {{- include "blockscout-eth-bytecode-db.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.ethBytecodeDb.service.type }}
+  ports:
+    - port: {{ .Values.ethBytecodeDb.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    {{- if .Values.ethBytecodeDb.metrics.enabled }}
+    - port: {{ .Values.ethBytecodeDb.service.metricsPort }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+    {{- end }}
+  selector:
+    {{- include "blockscout-eth-bytecode-db.selectorLabels" . | nindent 4 }}
+

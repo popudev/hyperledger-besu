@@ -1,0 +1,37 @@
+{{- if .Values.sigProvider.ingress.enabled -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "blockscout-sig-provider.fullname" . }}
+  labels:
+    {{- include "blockscout-sig-provider.labels" . | nindent 4 }}
+  {{- with .Values.sigProvider.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.sigProvider.ingress.className }}
+  ingressClassName: {{ .Values.sigProvider.ingress.className }}
+  {{- end }}
+  {{- if .Values.sigProvider.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.sigProvider.ingress.hostname }}
+    secretName: {{ include "blockscout-sig-provider.fullname" . }}-tls
+  {{- end }}
+  rules:
+  - host: {{ .Values.sigProvider.ingress.hostname }}
+    http:
+      paths:
+      {{- range .Values.sigProvider.ingress.paths }}
+      - path: {{ .path }}
+        pathType: {{ .pathType }}
+        backend:
+          service:
+            name: {{ include "blockscout-sig-provider.fullname" $ }}
+            port:
+              number: {{ $.Values.sigProvider.service.port }}
+      {{- end }}
+{{- end }}
+

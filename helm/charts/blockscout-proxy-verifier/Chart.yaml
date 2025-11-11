@@ -1,0 +1,15 @@
+apiVersion: v2
+name: blockscout-proxy-verifier
+description: Blockscout proxy-verifier service
+type: application
+version: 0.1.0
+appVersion: latest
+keywords:
+  - blockscout
+  - proxy-verifier
+  - explorer
+  - ethereum
+home: https://github.com/blockscout/blockscout
+maintainers:
+  - name: Blockscout Team
+

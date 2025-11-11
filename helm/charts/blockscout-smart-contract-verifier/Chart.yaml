@@ -1,0 +1,15 @@
+apiVersion: v2
+name: blockscout-smart-contract-verifier
+description: Blockscout smart-contract-verifier service
+type: application
+version: 0.1.0
+appVersion: latest
+keywords:
+  - blockscout
+  - smart-contract-verifier
+  - explorer
+  - ethereum
+home: https://github.com/blockscout/blockscout
+maintainers:
+  - name: Blockscout Team
+

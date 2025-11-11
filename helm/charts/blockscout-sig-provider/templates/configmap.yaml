@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "blockscout-sig-provider.fullname" . }}-env
+  labels:
+    {{- include "blockscout-sig-provider.labels" . | nindent 4 }}
+data:
+{{- range $key, $value := .Values.sigProvider.env }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+

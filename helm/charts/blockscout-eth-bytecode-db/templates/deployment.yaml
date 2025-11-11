@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "blockscout-eth-bytecode-db.fullname" . }}
+  labels:
+    {{- include "blockscout-eth-bytecode-db.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.ethBytecodeDb.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "blockscout-eth-bytecode-db.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "blockscout-eth-bytecode-db.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: eth-bytecode-db
+        image: "{{ .Values.ethBytecodeDb.image.repository }}/{{ .Values.ethBytecodeDb.image.name }}:{{ .Values.ethBytecodeDb.image.tag }}"
+        imagePullPolicy: {{ .Values.ethBytecodeDb.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.ethBytecodeDb.service.targetPort }}
+          protocol: TCP
+        {{- if .Values.ethBytecodeDb.metrics.enabled }}
+        - name: metrics
+          containerPort: {{ .Values.ethBytecodeDb.service.metricsTargetPort }}
+          protocol: TCP
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "blockscout-eth-bytecode-db.fullname" . }}-env
+        env:
+        - name: ETH_BYTECODE_DB__SERVER__HTTP__ADDR
+          value: "0.0.0.0:{{ .Values.ethBytecodeDb.service.targetPort }}"
+        {{- if .Values.ethBytecodeDb.metrics.enabled }}
+        - name: ETH_BYTECODE_DB__METRICS__ENABLED
+          value: "true"
+        - name: ETH_BYTECODE_DB__METRICS__ADDR
+          value: "0.0.0.0:{{ .Values.ethBytecodeDb.service.metricsTargetPort }}"
+        {{- end }}
+        resources:
+          {{- toYaml .Values.ethBytecodeDb.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.ethBytecodeDb.livenessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.ethBytecodeDb.livenessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.ethBytecodeDb.readinessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.ethBytecodeDb.readinessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+

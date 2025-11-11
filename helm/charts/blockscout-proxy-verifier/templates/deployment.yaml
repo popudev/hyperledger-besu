@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "blockscout-proxy-verifier.fullname" . }}
+  labels:
+    {{- include "blockscout-proxy-verifier.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.proxyVerifier.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "blockscout-proxy-verifier.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "blockscout-proxy-verifier.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: proxy-verifier
+        image: "{{ .Values.proxyVerifier.image.repository }}/{{ .Values.proxyVerifier.image.name }}:{{ .Values.proxyVerifier.image.tag }}"
+        imagePullPolicy: {{ .Values.proxyVerifier.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.proxyVerifier.service.httpTargetPort }}
+          protocol: TCP
+        {{- if .Values.proxyVerifier.metrics.enabled }}
+        - name: metrics
+          containerPort: {{ .Values.proxyVerifier.service.metricsTargetPort }}
+          protocol: TCP
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "blockscout-proxy-verifier.fullname" . }}-env
+        {{- if .Values.proxyVerifier.envFromSecret }}
+        - secretRef:
+            name: {{ include "blockscout-proxy-verifier.fullname" . }}-secret
+        {{- end }}
+        env:
+        {{- if .Values.proxyVerifier.metrics.enabled }}
+        - name: PROXY_VERIFIER__METRICS__ENABLED
+          value: "true"
+        {{- end }}
+        resources:
+          {{- toYaml .Values.proxyVerifier.resources | nindent 10 }}
+        {{- if .Values.proxyVerifier.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.proxyVerifier.livenessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.proxyVerifier.livenessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.proxyVerifier.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.proxyVerifier.readinessProbe.path }}
+            port: http
+            scheme: HTTP
+          {{- with .Values.proxyVerifier.readinessProbe.params }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+

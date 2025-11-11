@@ -1,0 +1,61 @@
+# Proxy-verifier configuration
+proxyVerifier:
+  image:
+    repository: ghcr.io
+    name: blockscout/proxy-verifier
+    tag: main
+    pullPolicy: Always
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    httpPort: 80
+    httpTargetPort: 8050
+    metricsPort: 6060
+    metricsTargetPort: 6060
+  metrics:
+    enabled: true
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "250m"
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+  env:
+    PROXY_VERIFIER__ETH_BYTECODE_DB__PROBE_URL: "true"
+    # PROXY_VERIFIER__ETH_BYTECODE_DB__HTTP_URL: "https://eth-bytecode-db-test.k8s-dev.blockscout.com"
+    # PROXY_VERIFIER_CHAINS__5__NAME: "Eth Goerli"
+    # PROXY_VERIFIER_CHAINS__5__api_url: "https://eth-goerli.blockscout.com/"
+    # PROXY_VERIFIER_CHAINS__5__sensitive_api_key: ""
+  envFromSecret: {}
+    # PROXY_VERIFIER_CHAINS__5__sensitive_api_key: ""
+  livenessProbe:
+    enabled: true
+    path: /health
+    params:
+      initialDelaySeconds: 30
+      periodSeconds: 60
+      timeoutSeconds: 5
+      failureThreshold: 3
+  readinessProbe:
+    enabled: true
+    path: /health
+    params:
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+  ingress:
+    enabled: false
+    className: nginx
+    annotations: 
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    hostname: explorer.blockchain.local
+    paths:
+      - path: /proxy-verifier(/|$)(.*)
+        pathType: ImplementationSpecific
+    tls:
+      enabled: false
+

@@ -1,0 +1,37 @@
+{{- if .Values.smartContractVerifier.ingress.enabled -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "blockscout-smart-contract-verifier.fullname" . }}
+  labels:
+    {{- include "blockscout-smart-contract-verifier.labels" . | nindent 4 }}
+  {{- with .Values.smartContractVerifier.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.smartContractVerifier.ingress.className }}
+  ingressClassName: {{ .Values.smartContractVerifier.ingress.className }}
+  {{- end }}
+  {{- if .Values.smartContractVerifier.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.smartContractVerifier.ingress.hostname }}
+    secretName: {{ include "blockscout-smart-contract-verifier.fullname" . }}-tls
+  {{- end }}
+  rules:
+  - host: {{ .Values.smartContractVerifier.ingress.hostname }}
+    http:
+      paths:
+      {{- range .Values.smartContractVerifier.ingress.paths }}
+      - path: {{ .path }}
+        pathType: {{ .pathType }}
+        backend:
+          service:
+            name: {{ include "blockscout-smart-contract-verifier.fullname" $ }}
+            port:
+              number: {{ $.Values.smartContractVerifier.service.httpPort }}
+      {{- end }}
+{{- end }}
+

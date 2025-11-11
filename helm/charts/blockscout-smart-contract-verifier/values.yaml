@@ -1,0 +1,85 @@
+# Smart-contract-verifier configuration
+smartContractVerifier:
+  image:
+    repository: ghcr.io
+    name: blockscout/smart-contract-verifier
+    tag: latest
+    pullPolicy: Always
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    httpPort: 8050
+    httpTargetPort: 8050
+    grpcPort: 8051
+    grpcTargetPort: 8051
+    metricsPort: 6060
+    metricsTargetPort: 6060
+  grpc:
+    enabled: false
+  metrics:
+    enabled: false
+  resources:
+    limits:
+      memory: "8Gi"
+      cpu: "1"
+    requests:
+      memory: "1Gi"
+      cpu: "250m"
+  env:
+    SMART_CONTRACT_VERIFIER__SERVER__HTTP__ENABLED: "true"
+    SMART_CONTRACT_VERIFIER__SERVER__HTTP__ADDR: "0.0.0.0:8050"
+    SMART_CONTRACT_VERIFIER__SERVER__HTTP__MAX_BODY_SIZE: "2097152"
+    SMART_CONTRACT_VERIFIER__SERVER__GRPC__ENABLED: "false"
+    SMART_CONTRACT_VERIFIER__SERVER__GRPC__ADDR: "0.0.0.0:8051"
+    SMART_CONTRACT_VERIFIER__SOLIDITY__ENABLED: "true"
+    SMART_CONTRACT_VERIFIER__SOLIDITY__COMPILERS_DIR: "/tmp/solidity-compilers"
+    SMART_CONTRACT_VERIFIER__SOLIDITY__REFRESH_VERSIONS_SCHEDULE: "0 0 * * * * *"
+    SMART_CONTRACT_VERIFIER__SOLIDITY__FETCHER__LIST__LIST_URL: "https://solc-bin.ethereum.org/linux-amd64/list.json"
+    SMART_CONTRACT_VERIFIER__VYPER__ENABLED: "true"
+    SMART_CONTRACT_VERIFIER__VYPER__COMPILERS_DIR: "/tmp/vyper-compilers"
+    SMART_CONTRACT_VERIFIER__VYPER__REFRESH_VERSIONS_SCHEDULE: "0 0 * * * * *"
+    SMART_CONTRACT_VERIFIER__VYPER__FETCHER__LIST__LIST_URL: "https://raw.githubusercontent.com/blockscout/solc-bin/main/vyper.list.json"
+    SMART_CONTRACT_VERIFIER__SOURCIFY__ENABLED: "true"
+    SMART_CONTRACT_VERIFIER__SOURCIFY__API_URL: "https://sourcify.dev/server/"
+    SMART_CONTRACT_VERIFIER__SOURCIFY__VERIFICATION_ATTEMPTS: "3"
+    SMART_CONTRACT_VERIFIER__SOURCIFY__REQUEST_TIMEOUT: "10"
+    SMART_CONTRACT_VERIFIER__METRICS__ENABLED: "false"
+    SMART_CONTRACT_VERIFIER__METRICS__ADDR: "0.0.0.0:6060"
+    SMART_CONTRACT_VERIFIER__METRICS__ROUTE: "/metrics"
+    SMART_CONTRACT_VERIFIER__JAEGER__ENABLED: "false"
+    SMART_CONTRACT_VERIFIER__JAEGER__AGENT_ENDPOINT: "localhost:6831"
+  livenessProbe:
+    path: /health?service=
+    params:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+  readinessProbe:
+    path: /health?service=
+    params:
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+  ingress:
+    enabled: false
+    className: nginx
+    annotations: 
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    hostname: explorer.blockchain.local
+    paths:
+      - path: /smart-contract-verifier(/|$)(.*)
+        pathType: ImplementationSpecific
+    tls:
+      enabled: false
+  grpcIngress:
+    enabled: false
+    className: nginx
+    annotations: {}
+    hostname: grpc-smart-contract-verifier.local
+    tls:
+      enabled: false
+
